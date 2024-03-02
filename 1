@@ -1,0 +1,51 @@
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import numpy as np
+
+np.random.seed(42)
+X = 2 * np.random.rand(100, 1)  # один признак
+y = 4 + 3 * X + np.random.randn(100, 1)  # целевая переменная с небольшим шумом
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+class MyLinearRegression:
+    def __init__(self, lr=0.1, epochs=1000):
+        self.lr = lr
+        self.epochs = epochs
+
+    def fit(self, X_train, y_train):
+        self.w = np.zeros(X_train.shape[1])
+        self.b = 0
+
+        for epoch in range(self.epochs):
+            for i in range(len(X_train)):
+                y_pred = self.w @ X_train[i] + self.b
+                loss = (y_train[i] - y_pred)**2
+                self.w += 2 * self.lr * (y_train[i] - y_pred) @ X_train[i]
+                self.b += 2 * self.lr * (y_train[i] - y_pred)
+
+    def predict(self, X_test):
+        preds = X_test @ self.w + self.b
+        return preds
+    
+    def weights(self):
+        return float(self.w), float(self.b)
+
+def MSE(y_test, preds):
+    mse = ((y_test - preds)**2).mean()
+    return mse
+
+model = MyLinearRegression()
+model.fit(X_train, y_train)
+preds = model.predict(X_test)
+MSE(y_test, preds)
+w, b = model.weights()
+
+plt.scatter(X_train, y_train, label='Train', color='red')
+plt.scatter(X_test, y_test, label='Test', color='blue')
+plt.plot([min(X), max(X)], [w*min(X)+b, w*max(X)+b], color='darkblue')
+plt.grid()
+plt.legend()
+plt.xlabel('Признак')
+plt.ylabel('Целевая переменная')
+plt.show()
